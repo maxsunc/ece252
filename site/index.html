@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ECE 252 &middot; Lecture Materials</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg-soft: #171a23;
+    --card: #1b1f2a;
+    --card-hover: #232838;
+    --border: #2b3143;
+    --text: #e6e9f0;
+    --muted: #9aa3b8;
+    --accent: #6ea8fe;
+    --accent-2: #b18cff;
+    --notes: #4fd1a5;
+    --slides: #ffb454;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1200px 600px at 80% -10%, #1c2233 0%, var(--bg) 55%) fixed;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  header {
+    padding: 48px 24px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(28px, 4vw, 44px);
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .subtitle { color: var(--muted); margin-top: 8px; font-size: 16px; }
+  .toolbar {
+    max-width: 1200px;
+    margin: 8px auto 0;
+    padding: 0 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search {
+    flex: 1 1 320px;
+    display: flex;
+    align-items: center;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+  }
+  .search input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 15px;
+    width: 100%;
+  }
+  .search svg { flex: none; margin-right: 10px; opacity: 0.6; }
+  .count { color: var(--muted); font-size: 14px; white-space: nowrap; }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .section-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 28px 4px 14px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    min-height: 150px;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  }
+  .card:hover {
+    background: var(--card-hover);
+    border-color: #3a4763;
+    transform: translateY(-3px);
+  }
+  .badge {
+    align-self: flex-start;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    background: rgba(110,168,254,0.12);
+    border: 1px solid rgba(110,168,254,0.35);
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .card h3 {
+    margin: 0 0 14px;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .card .actions { margin-top: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--bg-soft);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform .1s ease, filter .1s ease;
+    text-decoration: none;
+  }
+  .btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+  .btn.notes { border-color: rgba(79,209,165,0.5); color: var(--notes); }
+  .btn.slides { border-color: rgba(255,180,84,0.5); color: var(--slides); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .extra-card { min-height: 120px; }
+  .extra-card .badge { color: var(--accent-2); background: rgba(177,140,255,0.12); border-color: rgba(177,140,255,0.35); }
+  .extra-card .desc { color: var(--muted); font-size: 13px; margin: -6px 0 14px; }
+
+  footer { max-width: 1200px; margin: 40px auto; padding: 0 24px 40px; color: var(--muted); font-size: 13px; }
+
+  /* Modal viewer */
+  .modal {
+    position: fixed; inset: 0; display: none;
+    background: rgba(5,7,12,0.85);
+    z-index: 50;
+    padding: 24px;
+  }
+  .modal.open { display: flex; flex-direction: column; }
+  .modal-bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 4px 12px;
+  }
+  .modal-bar h2 { font-size: 16px; margin: 0; flex: 1; font-weight: 600; }
+  .modal iframe {
+    flex: 1; width: 100%; border: none; border-radius: 12px;
+    background: #fff;
+  }
+  .icon-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 8px 12px; cursor: pointer; font-size: 14px; font-weight: 600;
+    text-decoration: none;
+  }
+  .icon-btn:hover { filter: brightness(1.2); }
+  .no-results { color: var(--muted); padding: 20px 4px; display: none; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>ECE 252 &mdash; Systems Programming &amp; Concurrency</h1>
+    <div class="subtitle">Lecture notes &amp; slide decks. Click a lecture to read it right here.</div>
+  </header>
+
+  <div class="toolbar">
+    <label class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input id="search" type="search" placeholder="Search lectures by number or title&hellip;" autocomplete="off" />
+    </label>
+    <span class="count" id="count"></span>
+  </div>
+
+  <main>
+    <div class="section-title">Lectures</div>
+    <div class="grid" id="lecture-grid"></div>
+    <div class="no-results" id="no-results">No lectures match your search.</div>
+
+    <div class="section-title">Course Resources</div>
+    <div class="grid" id="extra-grid"></div>
+  </main>
+
+  <footer>
+    Generated from <code>lectures/compiled/</code>. Re-run <code>python3 site/build_site.py</code> to refresh.
+  </footer>
+
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-bar">
+      <h2 id="modal-title"></h2>
+      <a class="icon-btn" id="modal-open" target="_blank" rel="noopener">Open in new tab &nearr;</a>
+      <a class="icon-btn" id="modal-download" download>Download &darr;</a>
+      <button class="icon-btn" id="modal-close">Close &times;</button>
+    </div>
+    <iframe id="modal-frame" title="PDF viewer"></iframe>
+  </div>
+
+<script>
+const DATA = {
+  "lectures": [
+    {
+      "num": 1,
+      "title": "Introduction and Our C Toolkit",
+      "notes": "../lectures/compiled/L01-Introduction_and_Our_C_Toolkit.pdf",
+      "slides": "../lectures/compiled/L01-slides-Introduction_and_Our_C_Toolkit.pdf"
+    },
+    {
+      "num": 2,
+      "title": "Interrupts System Calls",
+      "notes": "../lectures/compiled/L02-Interrupts_System_Calls.pdf",
+      "slides": "../lectures/compiled/L02-slides-Interrupts_System_Calls.pdf"
+    },
+    {
+      "num": 3,
+      "title": "The File System",
+      "notes": "../lectures/compiled/L03-The_File_System.pdf",
+      "slides": "../lectures/compiled/L03-slides-The_File_System.pdf"
+    },
+    {
+      "num": 4,
+      "title": "Processes",
+      "notes": "../lectures/compiled/L04-Processes.pdf",
+      "slides": "../lectures/compiled/L04-slides-Processes.pdf"
+    },
+    {
+      "num": 5,
+      "title": "Processes in UNIX",
+      "notes": "../lectures/compiled/L05-Processes_in_UNIX.pdf",
+      "slides": "../lectures/compiled/L05-slides-Processes_in_UNIX.pdf"
+    },
+    {
+      "num": 6,
+      "title": "Inter-Process Communication",
+      "notes": "../lectures/compiled/L06-Inter-Process_Communication.pdf",
+      "slides": "../lectures/compiled/L06-slides-Inter-Process_Communication.pdf"
+    },
+    {
+      "num": 7,
+      "title": "Sockets",
+      "notes": "../lectures/compiled/L07-Sockets.pdf",
+      "slides": "../lectures/compiled/L07-slides-Sockets.pdf"
+    },
+    {
+      "num": 8,
+      "title": "Network Communication",
+      "notes": "../lectures/compiled/L08-Network_Communication.pdf",
+      "slides": "../lectures/compiled/L08-slides-Network_Communication.pdf"
+    },
+    {
+      "num": 9,
+      "title": "Pipes and Shared Memory",
+      "notes": "../lectures/compiled/L09-Pipes_and_Shared_Memory.pdf",
+      "slides": "../lectures/compiled/L09-slides-Pipes_and_Shared_Memory.pdf"
+    },
+    {
+      "num": 10,
+      "title": "Threads",
+      "notes": "../lectures/compiled/L10-Threads.pdf",
+      "slides": "../lectures/compiled/L10-slides-Threads.pdf"
+    },
+    {
+      "num": 11,
+      "title": "Threads and Concurrency",
+      "notes": "../lectures/compiled/L11-Threads_and_Concurrency.pdf",
+      "slides": "../lectures/compiled/L11-slides-Threads_and_Concurrency.pdf"
+    },
+    {
+      "num": 12,
+      "title": "Concurrency Synchronization and Atomicity",
+      "notes": "../lectures/compiled/L12-Concurrency_Synchronization_and_Atomicity.pdf",
+      "slides": "../lectures/compiled/L12-slides-Concurrency_Synchronization_Atomicity.pdf"
+    },
+    {
+      "num": 13,
+      "title": "Semaphores",
+      "notes": "../lectures/compiled/L13-Semaphores.pdf",
+      "slides": "../lectures/compiled/L13-slides-Semaphores.pdf"
+    },
+    {
+      "num": 14,
+      "title": "Synchronization Patterns",
+      "notes": "../lectures/compiled/L14-Synchronization_Patterns.pdf",
+      "slides": "../lectures/compiled/L14-slides-Synchronization_Patterns.pdf"
+    },
+    {
+      "num": 15,
+      "title": "The Producer-Consumer Problem",
+      "notes": "../lectures/compiled/L15-The_Producer-Consumer_Problem.pdf",
+      "slides": "../lectures/compiled/L15-slides-The_Producer-Consumer_Problem.pdf"
+    },
+    {
+      "num": 16,
+      "title": "The Readers-Writers Problem",
+      "notes": "../lectures/compiled/L16-The_Readers-Writers_Problem.pdf",
+      "slides": "../lectures/compiled/L16-slides-The_Readers-Writers_Problem.pdf"
+    },
+    {
+      "num": 17,
+      "title": "Deadlock",
+      "notes": "../lectures/compiled/L17-Deadlock.pdf",
+      "slides": "../lectures/compiled/L17-slides-Deadlock.pdf"
+    },
+    {
+      "num": 18,
+      "title": "Deadlock Avoidance",
+      "notes": "../lectures/compiled/L18-Deadlock_Avoidance.pdf",
+      "slides": "../lectures/compiled/L18-slides-Deadlock_Avoidance.pdf"
+    },
+    {
+      "num": 19,
+      "title": "Deadlock Detection Recovery",
+      "notes": "../lectures/compiled/L19-Deadlock_Detection_Recovery.pdf",
+      "slides": "../lectures/compiled/L19-slides-Deadlock_Detection_Recovery.pdf"
+    },
+    {
+      "num": 20,
+      "title": "Advanced Concurrency Problems",
+      "notes": "../lectures/compiled/L20-Advanced_Concurrency_Problems.pdf",
+      "slides": "../lectures/compiled/L20-slides-Advanced_Concurrency_Problems.pdf"
+    },
+    {
+      "num": 21,
+      "title": "Condition Variables Monitors Atomic Types",
+      "notes": "../lectures/compiled/L21-Condition_Variables_Monitors_Atomic_Types.pdf",
+      "slides": "../lectures/compiled/L21-slides-Condition_Variables_Monitors_Atomic_Types.pdf"
+    },
+    {
+      "num": 22,
+      "title": "Of Asgard Hel",
+      "notes": "../lectures/compiled/L22-Of_Asgard_Hel.pdf",
+      "slides": "../lectures/compiled/L22-slides-Of_Asgard_and_Hel.pdf"
+    },
+    {
+      "num": 23,
+      "title": "The Byzantine Generals Problem",
+      "notes": "../lectures/compiled/L23-The_Byzantine_Generals_Problem.pdf",
+      "slides": "../lectures/compiled/L23-slides-The_Byzantine_Generals_Problem.pdf"
+    },
+    {
+      "num": 24,
+      "title": "Concurrency in File Systems",
+      "notes": "../lectures/compiled/L24-Concurrency_in_File_Systems.pdf",
+      "slides": "../lectures/compiled/L24-slides-Concurrency_in_File_Systems.pdf"
+    },
+    {
+      "num": 25,
+      "title": "More Concurrency in File Systems",
+      "notes": "../lectures/compiled/L25-More_Concurrency_in_File_Systems.pdf",
+      "slides": "../lectures/compiled/L25-slides-More_Concurrency_in_File_Systems.pdf"
+    },
+    {
+      "num": 26,
+      "title": "Asynchronous I/O with select poll",
+      "notes": "../lectures/compiled/L26-Asynchronous_I_O_with_select_poll.pdf",
+      "slides": "../lectures/compiled/L26-slides-Asynchronous_I_O_with_select_poll.pdf"
+    },
+    {
+      "num": 27,
+      "title": "Asynchronous I/O with cURL",
+      "notes": "../lectures/compiled/L27-Asynchronous_I_O_with_cURL.pdf",
+      "slides": "../lectures/compiled/L27-slides-Asynchronous_I_O_with_cURL.pdf"
+    },
+    {
+      "num": 28,
+      "title": "Asynchronous I/O with AIO",
+      "notes": "../lectures/compiled/L28-Asynchronous_I_O_with_AIO.pdf",
+      "slides": "../lectures/compiled/L28-slides-Asynchronous_I_O_with_AIO.pdf"
+    },
+    {
+      "num": 29,
+      "title": "Event-Driven I/O with libevent",
+      "notes": "../lectures/compiled/L29-Event-Driven_I_O_with_libevent.pdf",
+      "slides": "../lectures/compiled/L29-slides-Event-Driven_I_O_with_libevent.pdf"
+    },
+    {
+      "num": 30,
+      "title": "Preparing for the Final",
+      "notes": null,
+      "slides": "../lectures/compiled/L30-slides-Preparing_for_the_Final.pdf"
+    }
+  ],
+  "extras": [
+    {
+      "title": "Reference Sheet",
+      "desc": "Exam/quick-reference sheet",
+      "href": "../lectures/referencesheet/ece252-referencesheet.pdf"
+    },
+    {
+      "title": "ECE Linux + VS Code Setup",
+      "desc": "Environment setup guide",
+      "href": "../lectures/compiled/ECELinux-VSCode-Setup.pdf"
+    },
+    {
+      "title": "Assignments",
+      "desc": "All course assignments",
+      "href": "../lectures/compiled/assignments.pdf"
+    },
+    {
+      "title": "Full Course Notebook",
+      "desc": "Every lecture note combined into one PDF",
+      "href": "../lectures/compiled/notebook.pdf"
+    }
+  ]
+};
+
+const lectureGrid = document.getElementById('lecture-grid');
+const extraGrid = document.getElementById('extra-grid');
+const countEl = document.getElementById('count');
+const noResults = document.getElementById('no-results');
+const searchEl = document.getElementById('search');
+
+const modal = document.getElementById('modal');
+const modalFrame = document.getElementById('modal-frame');
+const modalTitle = document.getElementById('modal-title');
+const modalOpen = document.getElementById('modal-open');
+const modalDownload = document.getElementById('modal-download');
+
+function openViewer(title, href) {
+  modalTitle.textContent = title;
+  modalFrame.src = href;
+  modalOpen.href = href;
+  modalDownload.href = href;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+}
+function closeViewer() {
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  modalFrame.src = 'about:blank';
+}
+document.getElementById('modal-close').addEventListener('click', closeViewer);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeViewer(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeViewer(); });
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function makeButton(label, cls, title, href) {
+  const b = document.createElement('button');
+  b.className = 'btn ' + cls;
+  b.textContent = label;
+  if (href) {
+    b.addEventListener('click', () => openViewer(title, href));
+  } else {
+    b.disabled = true;
+  }
+  return b;
+}
+
+function renderLectures(filter) {
+  lectureGrid.innerHTML = '';
+  const q = filter.trim().toLowerCase();
+  let shown = 0;
+  for (const lec of DATA.lectures) {
+    const label = 'L' + pad(lec.num);
+    const haystack = (label + ' ' + lec.title).toLowerCase();
+    if (q && !haystack.includes(q)) continue;
+    shown++;
+
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.textContent = 'Lecture ' + lec.num;
+    card.appendChild(badge);
+
+    const h3 = document.createElement('h3');
+    h3.textContent = lec.title;
+    card.appendChild(h3);
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    actions.appendChild(makeButton('Notes', 'notes', label + ' Notes \u2014 ' + lec.title, lec.notes));
+    actions.appendChild(makeButton('Slides', 'slides', label + ' Slides \u2014 ' + lec.title, lec.slides));
+    card.appendChild(actions);
+
+    lectureGrid.appendChild(card);
+  }
+  countEl.textContent = shown + ' / ' + DATA.lectures.length + ' lectures';
+  noResults.style.display = shown === 0 ? 'block' : 'none';
+}
+
+function renderExtras() {
+  extraGrid.innerHTML = '';
+  for (const x of DATA.extras) {
+    const card = document.createElement('div');
+    card.className = 'card extra-card';
+
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.textContent = 'Resource';
+    card.appendChild(badge);
+
+    const h3 = document.createElement('h3');
+    h3.textContent = x.title;
+    card.appendChild(h3);
+
+    if (x.desc) {
+      const d = document.createElement('div');
+      d.className = 'desc';
+      d.textContent = x.desc;
+      card.appendChild(d);
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    actions.appendChild(makeButton('Open', 'notes', x.title, x.href));
+    card.appendChild(actions);
+
+    extraGrid.appendChild(card);
+  }
+}
+
+searchEl.addEventListener('input', () => renderLectures(searchEl.value));
+renderLectures('');
+renderExtras();
+</script>
+</body>
+</html>
