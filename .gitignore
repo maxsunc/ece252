@@ -1,3 +1,9 @@
+## macOS
+.DS_Store
+
+## Vercel
+.vercel
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
